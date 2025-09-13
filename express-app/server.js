@@ -13,11 +13,7 @@ const unlinkFile = util.promisify(fs.unlink);
 // const multerS3 = require("multer-s3-v2");
 // const { s3, getImageStream, deleteImage } = require("./s3.js");
 const { dbConnection } = require("./db.js");
-require("dotenv").config();
 
-const session = require("express-session");
-
-const storage = multer.memoryStorage();
 
 const upload = multer({
     storage: storage,
@@ -45,8 +41,8 @@ function checkFileType(file, cb) {
     }
 }
 
-const port = 3000;
-// cons port = process.env.PORT || 3000;
+// const port = 3000;
+const port = process.env.PORT || 3000;
 
 const app = express();
 
@@ -62,7 +58,7 @@ app.use(express.static("public"));
 
 app.use(session({
     name: 'session_id', // this stuff
-    secret: 'your-secret-key', // use env var in real app
+    secret: process.env.SESSION_SECRET || 'fallback-secret', // use env var in real app
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false } // set true if using HTTPS
@@ -984,41 +980,3 @@ app.post("/recovery-verify", formUpload.none(), (req, res) => {
         }
     );
 });
-
-// --- Recovery Step 3: Reset Password ---
-app.post("/recovery-reset", formUpload.none(), (req, res) => {
-    const { password1 } = req.body;
-
-    if (!req.session.recoveryUser)
-        return res
-            .status(401)
-            .send("Unauthorized. Please verify your recovery code.");
-    if (!password1 || password1.length < 8)
-        return res.status(400).send("Password must be at least 8 characters.");
-
-    bcrypt.hash(password1, 10, (err, hashedPassword) => {
-        if (err) return res.status(500).send("Password hashing failed.");
-
-        const updateQuery =
-            "UPDATE user_tbl SET password = ?, recovery_code = NULL, recovery_code_expires = NULL WHERE email = ?";
-        dbConnection.query(
-            updateQuery,
-            [hashedPassword, req.session.recoveryUser.email],
-            (err) => {
-                if (err) return res.status(500).send("Failed to update password.");
-
-                // Clear session
-                req.session.recoveryUser = null;
-
-                res.status(200).send("Password changed successfully!");
-            }
-        );
-    });
-});
-
-
-
-
-
-
-
