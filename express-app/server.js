@@ -4,6 +4,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const bcrypt = require("bcryptjs");
+const session = require("express-session");
 // const bodyParser = require("body-parser");
 
 const fs = require('fs');
