@@ -14,6 +14,7 @@ const unlinkFile = util.promisify(fs.unlink);
 // const { s3, getImageStream, deleteImage } = require("./s3.js");
 const { dbConnection } = require("./db.js");
 
+const storage = multer.memoryStorage(); // or use multer.diskStorage({...}) for disk
 
 const upload = multer({
     storage: storage,
