@@ -3,7 +3,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 // const bodyParser = require("body-parser");
 
 const fs = require('fs');
